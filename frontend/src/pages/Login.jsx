@@ -29,12 +29,16 @@ const Login = () => {
 
 
   return (<> 
-      
-    <div className='flex  justify-end px-5 rounded'>
+      <div className='flex items-center justify-between px-5 py-2'>
+<Link to="/" >
+      <h1 className='text-lg font-semibold'>Home</h1>
+</Link>
+   
   <Link to='/signup' >
-        <button className="w-full bg-blue-600 text-white py-2 px-2 rounded-full">SignUp</button>
+        <button className=" bg-blue-600 text-white py-2 px-2 rounded-full">SignUp</button>
   </Link>
     </div>
+    
          
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
 <h1 className='flex flex-col items-center mb-5'>Welcome to the  Portal </h1>
