@@ -6,17 +6,19 @@ import { Link } from 'react-router-dom';
 
 const Signup = () => {
   const [form, setForm] = useState({ name: '', email: '', password: '', department: '' });
+
+  const backendUrl = import.meta.env.VITE_BACKEND_URL
+
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    await axios.post('http://localhost:4000/api/auth/signup', form ,{
+    await axios.post(`${backendUrl}/api/auth/signup`, form ,{
       headers: {
   Authorization: `Bearer ${getToken()}`,
 }
 
     });
-    alert("Signup complete. Wait for admin approval.");
     navigate('/login');
   };
 
