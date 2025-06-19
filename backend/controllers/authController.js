@@ -59,9 +59,9 @@ export const login = async (req, res) =>{
         const match = await bcrypt.compare(password,user.password);
         if(!match) return res.status(400).json({message: "Wrong Password"})
 
-         if(!user.isApproved) {
-            return res.status(403).json({message: "account not approved by admin"})
-         }
+        //  if(!user.isApproved && user.role != "admin") {
+        //     return res.status(403).json({message: "account not approved by admin"})
+        //  }
          
          const token = generateToken(user);
          res.status(200).json({token,user});
