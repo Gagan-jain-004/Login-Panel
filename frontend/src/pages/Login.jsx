@@ -8,21 +8,28 @@ import { Link } from 'react-router-dom';
 const Login = () => {
   const [form, setForm] = useState({ email: '', password: '' });
   const backendUrl = import.meta.env.VITE_BACKEND_URL
-
+ const [loading, setLoading] = useState(false);
   
   const navigate = useNavigate();
 
   
   const handleSubmit = async (e) => {
     e.preventDefault();
-     
-   
+     setLoading(true);
+    try {
 
     const res = await axios.post(`${backendUrl}/api/auth/login`, form);
 
     localStorage.setItem('token', res.data.token);
     localStorage.setItem('user', JSON.stringify(res.data.user));
     navigate('/dashboard');
+
+    }catch(err){
+      alert("Login failed. Please check your credentials")
+    }finally{
+      setLoading(false);
+    }
+
   };
 
 
@@ -46,7 +53,13 @@ const Login = () => {
       <form onSubmit={handleSubmit} className="space-y-4 w-1/3">
         <input className="w-full px-4 py-2 border rounded" placeholder="Email" type="email" onChange={(e) => setForm({ ...form, email: e.target.value })} />
         <input className="w-full px-4 py-2 border rounded" placeholder="Password" type="password" onChange={(e) => setForm({ ...form, password: e.target.value })} />
-        <button className="w-full bg-blue-600 text-white py-2 rounded">Login</button>
+        {/* <button className="w-full bg-blue-600 text-white py-2 rounded">Login</button> */}
+       <button
+            className={`w-full py-2 rounded text-white ${loading ? 'bg-blue-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'}`}
+            disabled={loading}
+          >
+            {loading ? 'Logging in...' : 'Login'}
+          </button>
       </form>
     </div>
   </>

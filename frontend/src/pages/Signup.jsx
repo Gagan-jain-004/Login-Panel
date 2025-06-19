@@ -8,20 +8,31 @@ const Signup = () => {
   const [form, setForm] = useState({ name: '', email: '', password: '', department: '' });
 
   const backendUrl = import.meta.env.VITE_BACKEND_URL
+const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
+   try{
     await axios.post(`${backendUrl}/api/auth/signup`, form ,{
       headers: {
   Authorization: `Bearer ${getToken()}`,
 }
 
-    });
-    navigate('/login');
-  };
+    }, );
 
+    navigate('/login');
+
+}catch(err){
+  alert("signup failed , check your credentials")
+}finally{
+  setLoading(false);
+}
+  
+  }
+  
   return (
     <>
         <div className='flex items-center justify-between px-5 py-2'>
@@ -40,7 +51,15 @@ const Signup = () => {
         <input className="w-full px-4 py-2 border rounded" placeholder="Email" type="email" onChange={(e) => setForm({ ...form, email: e.target.value })} />
         <input className="w-full px-4 py-2 border rounded" placeholder="Password" type="password" onChange={(e) => setForm({ ...form, password: e.target.value })} />
         <input className="w-full px-4 py-2 border rounded" placeholder="Department" onChange={(e) => setForm({ ...form, department: e.target.value })} />
-        <button className="w-full bg-green-600 text-white py-2 rounded">Signup</button>
+        {/* <button className="w-full bg-green-600 text-white py-2 rounded">Signup</button> */}
+       <button
+            className={`w-full py-2 rounded text-white ${
+              loading ? 'bg-green-400 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700'
+            }`}
+            disabled={loading}
+          >
+            {loading ? 'Signing up...' : 'Signup'}
+          </button>
       </form>
     </div>
     </>
