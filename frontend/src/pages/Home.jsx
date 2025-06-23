@@ -9,7 +9,7 @@ const Home = () => {
       className="flex flex-col items-center justify-center min-h-screen bg-cover bg-center text-center relative"
       style={{
         backgroundImage:
-          "url('src/assets/home.avif')",
+          "url('/home.avif')",
       }}
     >
      

@@ -29,7 +29,7 @@ const Login = () => {
     <div
       className="min-h-screen bg-cover bg-center relative"
       style={{
-        backgroundImage: `url('src/assets/SL.jpg')`,
+        backgroundImage: `url('/SL.jpg')`,
       }}
     >
       <div className="absolute inset-0 bg-black bg-opacity-60"></div>

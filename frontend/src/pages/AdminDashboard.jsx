@@ -61,7 +61,7 @@ const AdminDashboard = () => {
       className="min-h-screen bg-cover bg-center relative"
       style={{
         backgroundImage:
-          "url('src/assets/admdsh.jpg')",
+          "url('/admdsh.jpg')",
       }}
     >
   
