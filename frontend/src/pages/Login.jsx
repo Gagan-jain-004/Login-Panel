@@ -17,7 +17,7 @@ const Login = () => {
       const res = await axios.post(`${backendUrl}/api/auth/login`, form);
       localStorage.setItem('token', res.data.token);
       localStorage.setItem('user', JSON.stringify(res.data.user));
-      console.log("Logged in user:", res.data.user);
+      // console.log("Logged in user:", res.data.user);
 
       navigate('/dashboard');
     } catch (err) {
