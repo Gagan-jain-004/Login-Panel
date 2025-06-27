@@ -9,6 +9,8 @@ const Signup = () => {
     email: '',
     password: '',
     department: '',
+     city: '',
+    address: '',
   });
 
   const backendUrl = import.meta.env.VITE_BACKEND_URL;
@@ -87,6 +89,32 @@ const Signup = () => {
               onChange={(e) => setForm({ ...form, password: e.target.value })}
               required
             />
+
+  {/* City (NEW) */}
+            <input
+              className="w-full px-4 py-2 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
+              placeholder="City"
+              value={form.city}
+              onChange={(e) => setForm({ ...form, city: e.target.value })}
+              required
+            />
+
+            {/* Address (NEW) */}
+            <input
+              className="w-full px-4 py-2 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
+              placeholder="Address"
+              value={form.address}
+              onChange={(e) => setForm({ ...form, address: e.target.value })}
+              required
+            />
+            <input
+              className="w-full px-4 py-2 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
+              placeholder="Mobile no."
+              value={form.mobile}
+              onChange={(e) => setForm({ ...form, mobile: e.target.value })}
+              required
+            />
+
         <div className="relative">
   <select
     className="w-full appearance-none px-4 py-2 rounded-lg bg-white bg-opacity-100 focus:outline-none focus:ring-2 focus:ring-blue-500  text-black"
@@ -97,10 +125,11 @@ const Signup = () => {
     <option value="" disabled hidden >
      Select Department 
     </option>
-    <option value="Accounts">Accounts</option>
-    <option value="Sales">Sales</option>
-    <option value="IT">IT</option>
-    <option value="Dispatch">Dispatch</option>
+  <option value="school">School</option>
+<option value="accounts">Accounts</option>
+<option value="it">IT</option>
+<option value="dispatch">Dispatch</option>
+
   </select>
   
   
