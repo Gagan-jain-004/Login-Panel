@@ -18,7 +18,7 @@ const generateToken = (user)=>{
 
 export  const signup  = async(req , res )=>{
     try {
-        const {name,email,password,department} = req.body;
+        const {name,email,password,department,city, address,mobile } = req.body;
    
     const existing = await User.findOne({email});
     
@@ -31,7 +31,10 @@ export  const signup  = async(req , res )=>{
         name,
         email,
         password: hashedPassword,
-        department,
+         department: department?.toLowerCase(),
+         city,    
+      address,  
+      mobile,
         role: "user", 
         isApproved: false,
     });

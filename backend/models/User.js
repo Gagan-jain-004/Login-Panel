@@ -9,6 +9,9 @@ const userSchema = new mongoose.Schema({
     approved: {type: Boolean, default: false},
      resetPasswordToken: { type: String },
     resetPasswordExpires: { type: Date },
+    city: { type: String }, 
+  address: { type: String },
+  mobile: { type: String },
 },{timestamps:  true});
 
 
