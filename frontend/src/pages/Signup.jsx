@@ -11,6 +11,7 @@ const Signup = () => {
     department: '',
      city: '',
     address: '',
+    organizationCode: '',
   });
 
   const backendUrl = import.meta.env.VITE_BACKEND_URL;
@@ -138,6 +139,14 @@ const Signup = () => {
   </div>
 </div>
   
+  <input
+  className="w-full px-4 py-2 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
+  placeholder="Organization Code"
+  value={form.organizationCode}
+  onChange={(e) => setForm({ ...form, organizationCode: e.target.value })}
+  required
+/>
+
 
             <button
               type="submit"

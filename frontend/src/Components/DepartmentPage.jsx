@@ -8,10 +8,11 @@ const DepartmentPage = ({ title, endpoint, department }) => {
   const [showPopup, setShowPopup] = useState(false);
   const [showFormPopup, setShowFormPopup] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  const [newUser, setNewUser] = useState({ name: "", email: "", password: "", city: "", address: "", mobile: "" });
+  const [newUser, setNewUser] = useState({ name: "", email: "", password: "", city: "", address: "", mobile: "",organizationCode:"", });
   const [entriesPerPage, setEntriesPerPage] = useState(10);
   const [page, setPage] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
+const [filterMonth, setFilterMonth] = useState("");
 
   const fetchUsers = async () => {
     try {
@@ -19,7 +20,8 @@ const DepartmentPage = ({ title, endpoint, department }) => {
         params: {
           search: searchTerm,
           page,
-          limit: entriesPerPage
+          limit: entriesPerPage,
+          month: filterMonth,
         }
       });
       setUsers(res.data.users);
@@ -31,7 +33,8 @@ const DepartmentPage = ({ title, endpoint, department }) => {
 
   useEffect(() => {
     fetchUsers();
-  }, [searchTerm, entriesPerPage, page]);
+    
+  }, [searchTerm, entriesPerPage, page,filterMonth]);
 
   const handleSearch = (e) => {
     setSearchTerm(e.target.value);
@@ -43,7 +46,7 @@ const DepartmentPage = ({ title, endpoint, department }) => {
     try {
       await axios.post(endpoint, { ...newUser, department });
       setShowFormPopup(false);
-      setNewUser({ name: "", email: "", password: "", city: "", address: "", mobile: "" });
+      setNewUser({ name: "", email: "", password: "", city: "", address: "", mobile: "",organizationCode:"" });
       fetchUsers();
     } catch (err) {
       console.error("Add user error:", err.response?.data || err.message);
@@ -61,37 +64,56 @@ const DepartmentPage = ({ title, endpoint, department }) => {
 
   return (
     <div className="p-4 text-black">
-      <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
+      <h2 className="text-2xl font-bold mb-4 flex items-center gap-10">
         {title}
         <button onClick={() => setShowFormPopup(true)} className="p-2 bg-green-600 text-white rounded-lg hover:bg-green-700 ml-10">
-          <Plus size={18} /> Add User
+           Add {department}
         </button>
       </h2>
 
       <div className="flex justify-between items-center mb-4">
-        <input
-          type="search"
-          value={searchTerm}
-          onChange={handleSearch}
-          placeholder="Search by name"
-          className="px-4 py-2 rounded border focus:outline-none"
-        />
-        <select
-          value={entriesPerPage}
-          onChange={(e) => { setEntriesPerPage(+e.target.value); setPage(1); }}
-          className="px-3 py-2 rounded border focus:outline-none"
-        >
-          {[10, 20, 50].map(n => (
-            <option key={n} value={n}>{n} per page</option>
-          ))}
-        </select>
-      </div>
+  <div className="flex items-center gap-2">
+    <input
+      type="search"
+      value={searchTerm}
+      onChange={handleSearch}
+      placeholder="Search by name"
+      className="px-4 py-2 rounded border focus:outline-none"
+    />
+    <select
+      value={filterMonth}
+      onChange={(e) => { setFilterMonth(e.target.value); setPage(1); }}
+      className="px-3 py-2 rounded border focus:outline-none"
+    >
+      <option value="">All Months</option>
+      {Array.from({ length: 12 }).map((_, i) => {
+        const month = (i + 1).toString().padStart(2, '0');
+        const year = new Date().getFullYear();
+        return (
+          <option key={i} value={`${year}-${month}`}>
+            {new Date(`${year}-${month}-01`).toLocaleString('default', { month: 'long' })} {year}
+          </option>
+        );
+      })}
+    </select>
+  </div>
+  <select
+    value={entriesPerPage}
+    onChange={(e) => { setEntriesPerPage(+e.target.value); setPage(1); }}
+    className="px-3 py-2 rounded border focus:outline-none"
+  >
+    {[10, 20, 50].map(n => (
+      <option key={n} value={n}>{n} per page</option>
+    ))}
+  </select>
+</div>
+
 
       <div className="overflow-x-auto">
         <table className="w-full border border-gray-300">
           <thead className="bg-gray-100 text-left">
             <tr>
-              {["Name", "City", "Address", "Created At", "Actions"].map(h => <th key={h} className="px-4 py-2">{h}</th>)}
+              {["Org.Code","Name", "City", "Address", "Created At", "Actions"].map(h => <th key={h} className="px-4 py-2">{h}</th>)}
             </tr>
           </thead>
           <tbody>
@@ -99,6 +121,7 @@ const DepartmentPage = ({ title, endpoint, department }) => {
               ? <tr><td colSpan={5} className="px-4 py-8 text-center text-gray-600">No records</td></tr>
               : users.map(user => (
                 <tr key={user._id} className="border-t hover:bg-gray-50">
+                  <td className="px-4 py-2">{user.organizationCode||"11011"}</td>
                   <td className="px-4 py-2">{user.name}</td>
                   <td className="px-4 py-2">{user.city}</td>
                   <td className="px-4 py-2">{user.address}</td>
@@ -141,7 +164,7 @@ const DepartmentPage = ({ title, endpoint, department }) => {
           <div className="bg-white p-6 rounded shadow-lg w-[90%] max-w-md">
             <h3 className="text-xl font-bold mb-4">User Details</h3>
             <ul className="space-y-2">
-              {["name","email","mobile","city","address","role","department","approved"].map(k => {
+              {["name","email","mobile","city","address","role","department","organizationCode",].map(k => {
                 const v = popupUser[k];
                 const label = `${k.charAt(0).toUpperCase()}${k.slice(1)}`;
                 return <li key={k}><strong>{label}:</strong> {typeof v === "boolean" ? (v ? "Yes" : "No") : v}</li>;
@@ -158,7 +181,7 @@ const DepartmentPage = ({ title, endpoint, department }) => {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
           <form onSubmit={handleAddUser} className="bg-white p-6 rounded shadow-lg w-[90%] max-w-md space-y-4">
             <h3 className="text-xl font-bold mb-4">Add {department} User</h3>
-            {["name","email","password","mobile","city","address"].map(field => (
+            {["name","email","password","mobile","city","address","organizationCode"].map(field => (
               <input
                 key={field}
                 type={field === "email"? "email" : field === "password"? "password" : "text"}
@@ -168,6 +191,7 @@ const DepartmentPage = ({ title, endpoint, department }) => {
                 className="w-full px-3 py-2 border rounded focus:outline-none"
                 required
               />
+              
             ))}
             <div className="flex justify-end gap-2">
               <button type="button" className="px-4 py-2 bg-gray-200 rounded" onClick={() => setShowFormPopup(false)}>Cancel</button>

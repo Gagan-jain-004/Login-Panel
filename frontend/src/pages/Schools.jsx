@@ -2,7 +2,7 @@ import React from "react";
 import DepartmentPage from "../Components/DepartmentPage";
 
 const Schools = () => (
-  <DepartmentPage title="school Users" endpoint="/api/admin/users/schools" department="dispatch" />
+  <DepartmentPage title="School Users" endpoint="/api/admin/users/schools" department="school" />
 );
 
 export default Schools;

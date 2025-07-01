@@ -38,31 +38,73 @@ router.delete("/reject/:id", protect,adminOnly,async(req,res)=>{
 
 
 // GET /api/admin/users/schools
+// router.get("/users/schools", protect, adminOnly, async (req, res) => {
+//   try{const { search = "", page = 1, limit = 10,month } = req.query;
+//   const filter = {
+//     department: { $regex: /^school$/i },
+//     name: { $regex: search, $options: "i" }
+//   };
+
+//    if (month) {
+//       // Expecting month as "YYYY-MM" format
+//       const [year, monthNum] = month.split("-");
+//       const monthPattern = new RegExp(`^\\d{1,2}/` + Number(monthNum) + `/${year}$`);
+//       filter.createdAt = { $regex: monthPattern };
+//     }
+
+//   const skip = (page - 1) * limit;
+//   const total = await User.countDocuments(filter);
+//   const users = await User.find(filter)
+//     .sort({ createdAt: -1 })
+//     .skip(skip)
+//     .limit(Number(limit));
+
+//   res.json({ users, total });
+//   }catch(err){
+//     console.error("error fetching school users:",err);
+//     res.status(500).json({ message: "Error fetching school users" });
+//   }
+// });
+
+
 router.get("/users/schools", protect, adminOnly, async (req, res) => {
-  const { search = "", page = 1, limit = 10 } = req.query;
-  const filter = {
-    department: { $regex: /^school$/i },
-    name: { $regex: search, $options: "i" }
-  };
+  try {
+    const { search = "", page = 1, limit = 10, month } = req.query;
 
-  const skip = (page - 1) * limit;
-  const total = await User.countDocuments(filter);
-  const users = await User.find(filter)
-    .sort({ createdAt: -1 })
-    .skip(skip)
-    .limit(Number(limit));
+    const filter = {
+      department: { $regex: /^school$/i },
+      name: { $regex: search, $options: "i" }
+    };
 
-  res.json({ users, total });
+    if (month) {
+      const [year, monthNum] = month.split("-"); // e.g. "2025-06"
+      const start = new Date(year, parseInt(monthNum) - 1, 1); // 1 June
+      const end = new Date(year, parseInt(monthNum), 1);       // 1 July
+      filter.createdAt = { $gte: start, $lt: end };
+    }
+
+    const skip = (page - 1) * limit;
+    const total = await User.countDocuments(filter);
+    const users = await User.find(filter)
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(Number(limit));
+
+    res.json({ users, total });
+  } catch (err) {
+    console.error("Error fetching school users:", err);
+    res.status(500).json({ message: "Error fetching school users" });
+  }
 });
 
 
 router.post("/users/schools", protect, adminOnly, async (req, res) => {
-  const { name, email, password, city, address, mobile } = req.body;
+  const { name, email, password, city, address, mobile,organizationCode } = req.body;
   const hashed = await bcrypt.hash(password, 10);
   const user = await User.create({
     name, email, password: hashed, department: "school",
     city, address, mobile,
-    role: "user", approved: true
+    role: "user", approved: true,organizationCode,
   });
   res.status(201).json(user);
 });
@@ -85,97 +127,130 @@ router.delete("/users/:id", protect, adminOnly, async (req, res) => {
 
 //IT
 
- 
-router.get("/users/it", protect, adminOnly, async (req, res) => {
-  const { search = "", page = 1, limit = 10 } = req.query;
-  const filter = {
-    department: { $regex: /^it$/i },
-    name: { $regex: search, $options: "i" }
-  };
+ router.get("/users/it", protect, adminOnly, async (req, res) => {
+  try {
+    const { search = "", page = 1, limit = 10, month } = req.query;
+    const filter = {
+      department: { $regex: /^it$/i },
+      name: { $regex: search, $options: "i" },
+    };
 
-  const skip = (page - 1) * limit;
-  const total = await User.countDocuments(filter);
-  const users = await User.find(filter)
-    .sort({ createdAt: -1 })
-    .skip(skip)
-    .limit(Number(limit));
+    if (month) {
+      const [year, monthNum] = month.split("-");
+      const start = new Date(year, parseInt(monthNum) - 1, 1);
+      const end = new Date(year, parseInt(monthNum), 1);
+      filter.createdAt = { $gte: start, $lt: end };
+    }
 
-  res.json({ users, total });
+    const skip = (page - 1) * limit;
+    const total = await User.countDocuments(filter);
+    const users = await User.find(filter)
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(Number(limit));
+
+    res.json({ users, total });
+  } catch (err) {
+    res.status(500).json({ message: "Error fetching IT users" });
+  }
 });
 
  
 
 router.post("/users/it", protect, adminOnly, async (req, res) => {
-  const { name, email, password, city, address, mobile } = req.body;
+  const { name, email, password, city, address, mobile,organizationCode, } = req.body;
   const hashed = await bcrypt.hash(password, 10);
   const user = await User.create({
     name, email, password: hashed, department: "it",
     city, address, mobile,
-    role: "user", approved: true
+    role: "user", approved: true,organizationCode,
   });
   res.status(201).json(user);
 });
 
 
 //accounts 
-
 router.get("/users/accounts", protect, adminOnly, async (req, res) => {
-  const { search = "", page = 1, limit = 10 } = req.query;
-  const filter = {
-    department: { $regex: /^accounts$/i },
-    name: { $regex: search, $options: "i" }
-  };
+  try {
+    const { search = "", page = 1, limit = 10, month } = req.query;
+    const filter = {
+      department: { $regex: /^accounts$/i },
+      name: { $regex: search, $options: "i" },
+    };
 
-  const skip = (page - 1) * limit;
-  const total = await User.countDocuments(filter);
-  const users = await User.find(filter)
-    .sort({ createdAt: -1 })
-    .skip(skip)
-    .limit(Number(limit));
+    if (month) {
+      const [year, monthNum] = month.split("-");
+      const start = new Date(year, parseInt(monthNum) - 1, 1);
+      const end = new Date(year, parseInt(monthNum), 1);
+      filter.createdAt = { $gte: start, $lt: end };
+    }
 
-  res.json({ users, total });
+    const skip = (page - 1) * limit;
+    const total = await User.countDocuments(filter);
+    const users = await User.find(filter)
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(Number(limit));
+
+    res.json({ users, total });
+  } catch (err) {
+    res.status(500).json({ message: "Error fetching accounts users" });
+  }
 });
 
  
 
 router.post("/users/accounts", protect, adminOnly, async (req, res) => {
-  const { name, email, password, city, address, mobile } = req.body;
+  const { name, email, password, city, address, mobile,organizationCode } = req.body;
   const hashed = await bcrypt.hash(password, 10);
   const user = await User.create({
     name, email, password: hashed, department: "accounts",
     city, address, mobile,
-    role: "user", approved: true
+    role: "user", approved: true,organizationCode,
   });
   res.status(201).json(user);
 });
 
 // dispatch
 router.get("/users/dispatch", protect, adminOnly, async (req, res) => {
-  const { search = "", page = 1, limit = 10 } = req.query;
-  const filter = {
-    department: { $regex: /^dispatch$/i },
-    name: { $regex: search, $options: "i" }
-  };
+  try {
+    const { search = "", page = 1, limit = 10, month } = req.query;
+    const filter = {
+      department: { $regex: /^dispatch$/i },
+      name: { $regex: search, $options: "i" },
+    };
 
-  const skip = (page - 1) * limit;
-  const total = await User.countDocuments(filter);
-  const users = await User.find(filter)
-    .sort({ createdAt: -1 })
-    .skip(skip)
-    .limit(Number(limit));
+    if (month) {
+      const [year, monthNum] = month.split("-");
+      const start = new Date(year, parseInt(monthNum) - 1, 1);
+      const end = new Date(year, parseInt(monthNum), 1);
+      filter.createdAt = { $gte: start, $lt: end };
+    }
 
-  res.json({ users, total });
+    const skip = (page - 1) * limit;
+    const total = await User.countDocuments(filter);
+    const users = await User.find(filter)
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(Number(limit));
+
+    res.json({ users, total });
+  } catch (err) {
+    res.status(500).json({ message: "Error fetching dispatch users" });
+  }
 });
 
  
 
 router.post("/users/dispatch", protect, adminOnly, async (req, res) => {
-  const { name, email, password, city, address, mobile } = req.body;
+  const { name, email, password, city, address, mobile,organizationCode } = req.body;
   const hashed = await bcrypt.hash(password, 10);
   const user = await User.create({
     name, email, password: hashed, department: "dispatch",
     city, address, mobile,
-    role: "user", approved: true
+    role: "user", 
+    approved: true,
+    organizationCode,
   });
   res.status(201).json(user);
 });

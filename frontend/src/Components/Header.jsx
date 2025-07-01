@@ -4,7 +4,12 @@ const Header = () => {
   return (
     <header className="relative z-10 p-4 flex justify-between items-center bg-white/20 backdrop-blur-lg shadow-md">
         <Link to="/" className="text-red text-xl font-semibold">
-          Home
+         <img
+          src="/motion.png"
+          alt="Home"
+          className="h-8 w-auto object-contain"
+        />
+
         </Link>
         <div className="space-x-2">
           {/* <Link to="/addinguser">
