@@ -1,86 +1,82 @@
-import express from  "express";
-
+import express from "express";
 import User from "../models/User.js";
-import {protect,adminOnly} from "../middlewares/authMiddleware.js";
+import { protect, adminOnly } from "../middlewares/authMiddleware.js";
 import bcrypt from "bcryptjs";
-
 
 const router = express.Router();
 
-router.get("/users",protect,adminOnly,async (req , res)=>{
-
-    const users = await User.find();
-    res.json(users);
-
+// Generic user fetch
+router.get("/users", protect, adminOnly, async (req, res) => {
+  const users = await User.find();
+  res.json(users);
 });
 
-
-router.put("/approve/:id", protect,adminOnly,async(req,res) =>{
-    const user = await User.findById(req.params.id);
-
-    if(!user)  return  res.status(404).json({message: "User not found "});
-
-    user.isApproved = true;
-    await user.save();
-    res.json({message: "User approved "});
-
+// Approve user
+router.put("/approve/:id", protect, adminOnly, async (req, res) => {
+  const user = await User.findById(req.params.id);
+  if (!user) return res.status(404).json({ message: "User not found" });
+  user.approved = true;
+  await user.save();
+  res.json({ message: "User approved" });
 });
 
+// Reject user
+router.delete("/reject/:id", protect, adminOnly, async (req, res) => {
+  const user = await User.findById(req.params.id);
+  if (!user) return res.status(404).json({ message: "User not found" });
+  await user.deleteOne();
+  res.json({ message: "User rejected and deleted" });
+});
 
-router.delete("/reject/:id", protect,adminOnly,async(req,res)=>{
-    const user = await User.findById(req.params.id);
-    if(!user) return res.status(404).json({message: "User not found "});
-
-    await user.deleteOne();
-    res.json({message: "User rejected and deleted "});
-
-})
-
-
-// GET /api/admin/users/schools
-// router.get("/users/schools", protect, adminOnly, async (req, res) => {
-//   try{const { search = "", page = 1, limit = 10,month } = req.query;
-//   const filter = {
-//     department: { $regex: /^school$/i },
-//     name: { $regex: search, $options: "i" }
-//   };
-
-//    if (month) {
-//       // Expecting month as "YYYY-MM" format
-//       const [year, monthNum] = month.split("-");
-//       const monthPattern = new RegExp(`^\\d{1,2}/` + Number(monthNum) + `/${year}$`);
-//       filter.createdAt = { $regex: monthPattern };
-//     }
-
-//   const skip = (page - 1) * limit;
-//   const total = await User.countDocuments(filter);
-//   const users = await User.find(filter)
-//     .sort({ createdAt: -1 })
-//     .skip(skip)
-//     .limit(Number(limit));
-
-//   res.json({ users, total });
-//   }catch(err){
-//     console.error("error fetching school users:",err);
-//     res.status(500).json({ message: "Error fetching school users" });
-//   }
-// });
-
-
-router.get("/users/schools", protect, adminOnly, async (req, res) => {
+router.put("/users/:id", protect, adminOnly, async (req, res) => {
   try {
-    const { search = "", page = 1, limit = 10, month } = req.query;
+    const user = await User.findById(req.params.id);
+    if (!user) return res.status(404).json({ message: "User not found" });
 
-    const filter = {
-      department: { $regex: /^school$/i },
-      name: { $regex: search, $options: "i" }
-    };
+    const updates = req.body;
 
-    if (month) {
-      const [year, monthNum] = month.split("-"); // e.g. "2025-06"
-      const start = new Date(year, parseInt(monthNum) - 1, 1); // 1 June
-      const end = new Date(year, parseInt(monthNum), 1);       // 1 July
-      filter.createdAt = { $gte: start, $lt: end };
+    // Don't allow password updates via this route
+    if (updates.password) {
+      delete updates.password;
+    }
+
+    // Update fields
+   Object.keys(updates).forEach(key => {
+  if (key !== 'password') {
+    user[key] = updates[key];
+  }
+});
+
+
+    await user.save();
+    res.status(200).json({ message: "User updated successfully", user });
+  } catch (err) {
+    console.error("Update user error:", err);
+    res.status(500).json({ message: "Error updating user",error:err.message });
+  }
+});
+
+
+// Common fetch logic
+const fetchUsersByDepartment = async (req, res, department) => {
+  try {
+    const { search = "", page = 1, limit = 10, date } = req.query;
+
+   const filter = {
+  department: { $regex: new RegExp(`^${department}$`, "i") },
+  $or: [
+    { name: { $regex: search, $options: "i" } },
+    { organizationCode: { $regex: search, $options: "i" } }
+  ]
+};
+
+
+    if (date) {
+      const selectedDate = new Date(date);
+      filter.createdAt = {
+        $gte: new Date(selectedDate.setHours(0, 0, 0, 0)),
+        $lte: new Date(selectedDate.setHours(23, 59, 59, 999))
+      };
     }
 
     const skip = (page - 1) * limit;
@@ -92,30 +88,89 @@ router.get("/users/schools", protect, adminOnly, async (req, res) => {
 
     res.json({ users, total });
   } catch (err) {
-    console.error("Error fetching school users:", err);
-    res.status(500).json({ message: "Error fetching school users" });
+    res.status(500).json({ message: `Error fetching ${department} users` });
   }
-});
+};
 
+// Common post logic
+const createUser = async (req, res, department) => {
+  try {
+    const {
+      name, email, password, city, address, mobile, organizationCode,
+      district, state, pincode,
+      principalName, principalMobile, coordinatorName, coordinatorMobile, landline,
+      schoolBoard, schoolMedium, schoolType, schoolAffiliation,
+      physicsTeacherName, chemistryTeacherName, mathsTeacherName, biologyTeacherName,
+      physicsTeacherContact, chemistryTeacherContact, mathsTeacherContact, biologyTeacherContact,
+    } = req.body;
 
-router.post("/users/schools", protect, adminOnly, async (req, res) => {
-  const { name, email, password, city, address, mobile,organizationCode } = req.body;
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const user = await User.create({
+      name, email, password: hashedPassword, department,
+      city, address, mobile, organizationCode,
+      district, state, pincode,
+      principalName, principalMobile,
+      coordinatorName, coordinatorMobile, landline,
+      schoolBoard, schoolMedium, schoolType, schoolAffiliation,
+      physicsTeacherName, chemistryTeacherName, mathsTeacherName, biologyTeacherName,
+      physicsTeacherContact, chemistryTeacherContact, mathsTeacherContact, biologyTeacherContact,
+      role: "user", approved: true
+    });
+
+    res.status(201).json(user);
+  } catch (err) {
+    res.status(500).json({ message: `Error creating ${department} user`, error: err.message });
+  }
+};
+
+// ========== School ==========
+router.get("/users/schools", (req, res) => fetchUsersByDepartment(req, res, "school"));
+router.post("/users/schools", (req, res) => createUser(req, res, "school"));
+
+// ========== IT ==========
+router.get("/users/it", (req, res) => fetchUsersByDepartment(req, res, "it"));
+router.post("/users/it", protect, adminOnly, async (req, res) => {
+  const { name, email, password, city, address, mobile, organizationCode } = req.body;
   const hashed = await bcrypt.hash(password, 10);
   const user = await User.create({
-    name, email, password: hashed, department: "school",
-    city, address, mobile,
-    role: "user", approved: true,organizationCode,
+    name, email, password: hashed, department: "it",
+    city, address, mobile, organizationCode,
+    role: "user", approved: true
   });
   res.status(201).json(user);
 });
 
+// ========== Accounts ==========
+router.get("/users/accounts", (req, res) => fetchUsersByDepartment(req, res, "accounts"));
+router.post("/users/accounts", protect, adminOnly, async (req, res) => {
+  const { name, email, password, city, address, mobile, organizationCode } = req.body;
+  const hashed = await bcrypt.hash(password, 10);
+  const user = await User.create({
+    name, email, password: hashed, department: "accounts",
+    city, address, mobile, organizationCode,
+    role: "user", approved: true
+  });
+  res.status(201).json(user);
+});
 
+// ========== Dispatch ==========
+router.get("/users/dispatch", (req, res) => fetchUsersByDepartment(req, res, "dispatch"));
+router.post("/users/dispatch", protect, adminOnly, async (req, res) => {
+  const { name, email, password, city, address, mobile, organizationCode } = req.body;
+  const hashed = await bcrypt.hash(password, 10);
+  const user = await User.create({
+    name, email, password: hashed, department: "dispatch",
+    city, address, mobile, organizationCode,
+    role: "user", approved: true
+  });
+  res.status(201).json(user);
+});
 
+// ========== Delete by ID ==========
 router.delete("/users/:id", protect, adminOnly, async (req, res) => {
   try {
     const user = await User.findById(req.params.id);
     if (!user) return res.status(404).json({ message: "User not found" });
-
     await user.deleteOne();
     res.status(200).json({ message: "User deleted successfully" });
   } catch (err) {
@@ -123,167 +178,19 @@ router.delete("/users/:id", protect, adminOnly, async (req, res) => {
   }
 });
 
+export default router;
 
 
-//IT
 
- router.get("/users/it", protect, adminOnly, async (req, res) => {
-  try {
-    const { search = "", page = 1, limit = 10, month } = req.query;
-    const filter = {
-      department: { $regex: /^it$/i },
-      name: { $regex: search, $options: "i" },
-    };
 
-    if (month) {
-      const [year, monthNum] = month.split("-");
-      const start = new Date(year, parseInt(monthNum) - 1, 1);
-      const end = new Date(year, parseInt(monthNum), 1);
-      filter.createdAt = { $gte: start, $lt: end };
-    }
 
-    const skip = (page - 1) * limit;
-    const total = await User.countDocuments(filter);
-    const users = await User.find(filter)
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(Number(limit));
 
-    res.json({ users, total });
-  } catch (err) {
-    res.status(500).json({ message: "Error fetching IT users" });
-  }
-});
+
+
+
+
+
+
+
 
  
-
-router.post("/users/it", protect, adminOnly, async (req, res) => {
-  const { name, email, password, city, address, mobile,organizationCode, } = req.body;
-  const hashed = await bcrypt.hash(password, 10);
-  const user = await User.create({
-    name, email, password: hashed, department: "it",
-    city, address, mobile,
-    role: "user", approved: true,organizationCode,
-  });
-  res.status(201).json(user);
-});
-
-
-//accounts 
-router.get("/users/accounts", protect, adminOnly, async (req, res) => {
-  try {
-    const { search = "", page = 1, limit = 10, month } = req.query;
-    const filter = {
-      department: { $regex: /^accounts$/i },
-      name: { $regex: search, $options: "i" },
-    };
-
-    if (month) {
-      const [year, monthNum] = month.split("-");
-      const start = new Date(year, parseInt(monthNum) - 1, 1);
-      const end = new Date(year, parseInt(monthNum), 1);
-      filter.createdAt = { $gte: start, $lt: end };
-    }
-
-    const skip = (page - 1) * limit;
-    const total = await User.countDocuments(filter);
-    const users = await User.find(filter)
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(Number(limit));
-
-    res.json({ users, total });
-  } catch (err) {
-    res.status(500).json({ message: "Error fetching accounts users" });
-  }
-});
-
- 
-
-router.post("/users/accounts", protect, adminOnly, async (req, res) => {
-  const { name, email, password, city, address, mobile,organizationCode } = req.body;
-  const hashed = await bcrypt.hash(password, 10);
-  const user = await User.create({
-    name, email, password: hashed, department: "accounts",
-    city, address, mobile,
-    role: "user", approved: true,organizationCode,
-  });
-  res.status(201).json(user);
-});
-
-// dispatch
-router.get("/users/dispatch", protect, adminOnly, async (req, res) => {
-  try {
-    const { search = "", page = 1, limit = 10, month } = req.query;
-    const filter = {
-      department: { $regex: /^dispatch$/i },
-      name: { $regex: search, $options: "i" },
-    };
-
-    if (month) {
-      const [year, monthNum] = month.split("-");
-      const start = new Date(year, parseInt(monthNum) - 1, 1);
-      const end = new Date(year, parseInt(monthNum), 1);
-      filter.createdAt = { $gte: start, $lt: end };
-    }
-
-    const skip = (page - 1) * limit;
-    const total = await User.countDocuments(filter);
-    const users = await User.find(filter)
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(Number(limit));
-
-    res.json({ users, total });
-  } catch (err) {
-    res.status(500).json({ message: "Error fetching dispatch users" });
-  }
-});
-
- 
-
-router.post("/users/dispatch", protect, adminOnly, async (req, res) => {
-  const { name, email, password, city, address, mobile,organizationCode } = req.body;
-  const hashed = await bcrypt.hash(password, 10);
-  const user = await User.create({
-    name, email, password: hashed, department: "dispatch",
-    city, address, mobile,
-    role: "user", 
-    approved: true,
-    organizationCode,
-  });
-  res.status(201).json(user);
-});
-
-
-export  default router;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// router.get("/users/schools", protect, adminOnly, async (req, res) => {
-//   try {
-//     const schoolUsers = await User.find({
-//       department: { $regex: /^school$/i }, // ✅ case-insensitive match
-//     });
-//     res.json(schoolUsers);
-//   } catch (err) {
-//     res.status(500).json({ message: "Server error" });
-//   }
-// });

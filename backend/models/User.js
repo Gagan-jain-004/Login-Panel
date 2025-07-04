@@ -13,6 +13,33 @@ const userSchema = new mongoose.Schema({
     city: { type: String }, 
   address: { type: String },
   mobile: { type: String },
+
+district: String,
+  state: String,
+  pincode: String,
+
+  principalName: String,
+  principalMobile: String,
+  coordinatorName: String,
+  coordinatorMobile: String,
+  landline: String,
+
+  schoolBoard: { type: String, enum: ["CBSE", "ICSE", "STATE"] },
+  schoolMedium: { type: String, enum: ["English", "Hindi", "Both"] },
+  schoolType: { type: String, enum: ["Government", "Private"] },
+  schoolAffiliation: { type: String, enum: ["Primary", "Secondary", "Senior Secondary"] },
+
+  physicsTeacherName: String,
+  chemistryTeacherName: String,
+  mathsTeacherName: String,
+  biologyTeacherName: String,
+
+  physicsTeacherContact: String,
+  chemistryTeacherContact: String,
+  mathsTeacherContact: String,
+  biologyTeacherContact: String,
+
+
 },{timestamps:  true});
 
 
