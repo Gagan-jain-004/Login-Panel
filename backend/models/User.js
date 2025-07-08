@@ -38,6 +38,10 @@ district: String,
   chemistryTeacherContact: String,
   mathsTeacherContact: String,
   biologyTeacherContact: String,
+  
+  bookForTest: { type: String, enum: ["Interested", "Not Interested"], required: false },
+testDate: { type: Date },
+remark: { type: String }
 
 
 },{timestamps:  true});

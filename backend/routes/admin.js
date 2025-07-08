@@ -102,6 +102,7 @@ const createUser = async (req, res, department) => {
       schoolBoard, schoolMedium, schoolType, schoolAffiliation,
       physicsTeacherName, chemistryTeacherName, mathsTeacherName, biologyTeacherName,
       physicsTeacherContact, chemistryTeacherContact, mathsTeacherContact, biologyTeacherContact,
+      bookForTest, testDate, remark,
     } = req.body;
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -114,6 +115,8 @@ const createUser = async (req, res, department) => {
       schoolBoard, schoolMedium, schoolType, schoolAffiliation,
       physicsTeacherName, chemistryTeacherName, mathsTeacherName, biologyTeacherName,
       physicsTeacherContact, chemistryTeacherContact, mathsTeacherContact, biologyTeacherContact,
+      bookForTest, testDate, remark,
+
       role: "user", approved: true
     });
 
