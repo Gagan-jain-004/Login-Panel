@@ -14,6 +14,7 @@ const DepartmentPage = ({ title, endpoint, department }) => {
   const [totalCount, setTotalCount] = useState(0);
   const [filterDate, setFilterDate] = useState("");
   const [formSubmitted, setFormSubmitted] = useState(false);
+    const [interestCounts, setInterestCounts] = useState({ Interested: 0, NotInterested: 0 });
 
   const requiredFields = [
     "name", "email", "password", "address", "organizationCode", "city", "district", "state", "pincode",
@@ -39,12 +40,51 @@ const DepartmentPage = ({ title, endpoint, department }) => {
       });
       setUsers(res.data.users);
       setTotalCount(res.data.total);
+
+       const interestStats = { Interested: 0, NotInterested: 0 };
+      res.data.users.forEach(user => {
+        if (user.bookForTest === "Interested") interestStats.Interested++;
+        else if (user.bookForTest === "Not Interested") interestStats.NotInterested++;
+      });
+      setInterestCounts(interestStats);
+
     } catch (err) {
       console.error("Fetch error:", err.response?.data || err.message);
     }
   };
 
   useEffect(() => { fetchUsers(); }, [searchTerm, entriesPerPage, page, filterDate]);
+
+  // to report all interested / not interested count at first page
+//   useEffect(() => {
+//   const fetchAllUsersForStats = async () => {
+//     try {
+//       const res = await axios.get(endpoint, {
+//         params: {
+//           search: searchTerm,
+//           date: filterDate,
+//           limit: 99999, // Fetch all matching entries
+//         },
+//       });
+
+//       const fullList = res.data.users;
+//       const stats = { Interested: 0, NotInterested: 0 };
+
+//       fullList.forEach((user) => {
+//         if (user.bookForTest === "Interested") stats.Interested++;
+//         else if (user.bookForTest === "Not Interested") stats.NotInterested++;
+//       });
+
+//       setInterestCounts(stats);
+//     } catch (error) {
+//       console.error("Failed to fetch all users for stats", error);
+//     }
+//   };
+
+//   if (department === "school") {
+//     fetchAllUsersForStats();
+//   }
+// }, [searchTerm, filterDate, department]); // Optional: add others like year
 
   const handleSearch = (e) => { setSearchTerm(e.target.value); setPage(1); };
 
@@ -105,6 +145,18 @@ const DepartmentPage = ({ title, endpoint, department }) => {
           Add {department}
         </button>
       </h2>
+
+      {/* Interest Stats Block */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+        <div className="bg-green-100 p-4 rounded shadow">
+          <h4 className="font-semibold text-lg text-green-700">Interested</h4>
+          <p className="text-2xl font-bold">{interestCounts.Interested}</p>
+        </div>
+        <div className="bg-red-100 p-4 rounded shadow">
+          <h4 className="font-semibold text-lg text-red-700">Not Interested</h4>
+          <p className="text-2xl font-bold">{interestCounts.NotInterested}</p>
+        </div>
+      </div>
 
       <div className="flex justify-between items-center mb-4 flex-wrap gap-4">
         <div className="flex items-center gap-2">
