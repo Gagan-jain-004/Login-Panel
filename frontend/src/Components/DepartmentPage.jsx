@@ -14,7 +14,7 @@ const DepartmentPage = ({ title, endpoint, department }) => {
   const [totalCount, setTotalCount] = useState(0);
   const [filterDate, setFilterDate] = useState("");
   const [formSubmitted, setFormSubmitted] = useState(false);
-    const [interestCounts, setInterestCounts] = useState({ Interested: 0, NotInterested: 0 });
+    // const [interestCounts, setInterestCounts] = useState({ Interested: 0, NotInterested: 0 });
 
   const requiredFields = [
     "name", "email", "password", "address", "organizationCode", "city", "district", "state", "pincode",
@@ -41,12 +41,12 @@ const DepartmentPage = ({ title, endpoint, department }) => {
       setUsers(res.data.users);
       setTotalCount(res.data.total);
 
-       const interestStats = { Interested: 0, NotInterested: 0 };
-      res.data.users.forEach(user => {
-        if (user.bookForTest === "Interested") interestStats.Interested++;
-        else if (user.bookForTest === "Not Interested") interestStats.NotInterested++;
-      });
-      setInterestCounts(interestStats);
+      //  const interestStats = { Interested: 0, NotInterested: 0 };
+      // res.data.users.forEach(user => {
+      //   if (user.bookForTest === "Interested") interestStats.Interested++;
+      //   else if (user.bookForTest === "Not Interested") interestStats.NotInterested++;
+      // });
+      // setInterestCounts(interestStats);
 
     } catch (err) {
       console.error("Fetch error:", err.response?.data || err.message);
@@ -146,7 +146,7 @@ const DepartmentPage = ({ title, endpoint, department }) => {
         </button>
       </h2>
 
-      {/* Interest Stats Block */}
+      {/* Interest Stats Block
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
         <div className="bg-green-100 p-4 rounded shadow">
           <h4 className="font-semibold text-lg text-green-700">Interested</h4>
@@ -156,7 +156,7 @@ const DepartmentPage = ({ title, endpoint, department }) => {
           <h4 className="font-semibold text-lg text-red-700">Not Interested</h4>
           <p className="text-2xl font-bold">{interestCounts.NotInterested}</p>
         </div>
-      </div>
+      </div> */}
 
       <div className="flex justify-between items-center mb-4 flex-wrap gap-4">
         <div className="flex items-center gap-2">
