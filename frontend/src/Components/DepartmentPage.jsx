@@ -3,6 +3,10 @@ import React, { useEffect, useState } from "react";
 import axios from "../utils/axiosConfig";
 import { Eye, Trash2, Pencil } from "lucide-react";
 
+import * as XLSX from "xlsx";
+import { saveAs } from "file-saver";
+
+
 const DepartmentPage = ({ title, endpoint, department }) => {
   const [users, setUsers] = useState([]);
   const [popupUser, setPopupUser] = useState(null);
@@ -128,6 +132,62 @@ const DepartmentPage = ({ title, endpoint, department }) => {
     }
   };
 
+  const handleExportExcel = async () => {
+  try {
+    const res = await axios.get(endpoint, {
+      params: {
+        limit: 99999, // Get all entries
+        search: "",   // remove search filter
+        date: filterDate || ""
+      }
+    });
+
+    const allUsers = res.data.users;
+
+    if (!allUsers || allUsers.length === 0) {
+      alert("No data to export.");
+      return;
+    }
+
+    // Clean and flatten data
+    const cleanData = allUsers.map(user => {
+      const obj = {};
+      for (const [key, val] of Object.entries(user)) {
+        if (key === "_id" || key === "__v" || key === "password") continue;
+
+        if (val instanceof Date || key.toLowerCase().includes("date")) {
+          obj[key] = val ? new Date(val).toLocaleDateString() : "";
+        } else if (typeof val === "object" && val !== null) {
+          obj[key] = JSON.stringify(val);
+        } else {
+          obj[key] = val ?? "";
+        }
+      }
+      return obj;
+    });
+
+    const worksheet = XLSX.utils.json_to_sheet(cleanData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, `${department} Data`);
+
+    const excelBuffer = XLSX.write(workbook, {
+      bookType: "xlsx",
+      type: "array"
+    });
+
+    const blob = new Blob([excelBuffer], {
+      type:
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8"
+    });
+
+    saveAs(blob, `${department}_data.xlsx`);
+  } catch (error) {
+    console.error("Export failed:", error);
+    alert("Failed to export Excel.");
+  }
+};
+
+
   const totalPages = Math.ceil(totalCount / entriesPerPage);
 
   const openEditPopup = (user) => {
@@ -144,6 +204,13 @@ const DepartmentPage = ({ title, endpoint, department }) => {
         <button onClick={() => { setShowFormPopup(true); setFormSubmitted(false); }} className="p-2 bg-green-600 text-white rounded-lg hover:bg-green-700 ml-20">
           Add {department}
         </button>
+        <button
+  onClick={handleExportExcel}
+  className="p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+>
+  Download Data
+</button>
+
       </h2>
 
       {/* Interest Stats Block
