@@ -101,20 +101,20 @@ mongod
 **Backend**
 
 ```bash
-cd server
-npm run dev
+cd backend
+npm run server
 ```
 
 **Frontend**
 
 ```bash
-cd client
-npm start
+cd frontend
+npm run dev
 ```
 
 App runs on:
-Frontend → `http://localhost:3000`
-Backend → `http://localhost:5000`
+Frontend → `http://localhost:5173/`
+Backend → `http://localhost:4000`
 
 ---
 
