@@ -1,8 +1,3 @@
-Got it — I’ll make a **professional README.md** for your MERN-based admin dashboard project with Excel export.
-Here’s a version you can directly drop into your repo:
-
----
-
 # 📊 MERN Admin Dashboard
 
 An **Admin Dashboard** built with **MERN stack** (MongoDB, Express.js, React, Node.js) that allows administrators to **view, manage, and export departmental data** in Excel format.
