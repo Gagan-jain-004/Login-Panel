@@ -133,18 +133,6 @@ Download Excel
 
 ---
 
-## 📸 Screenshots
-
-### Dashboard
-
-![Dashboard Screenshot](docs/dashboard.png)
-
-### Excel Export
-
-![Excel Screenshot](docs/excel.png)
-
----
-
 ## 📜 License
 
 MIT License © 2025 \[Gagan Jain]
